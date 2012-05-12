@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link type="text/css" rel="stylesheet" href="/static/main.css" />
+
+    <title> Michael's Hand-Built Blog</title>
+</head>
+
+<body>
+    <a href='/' class="main-title">
+        Michael's Hand-Built Blog
+    </a>
+
+    <div id="content">
+        {% block content %}
+        {% endblock %}
+    <br>
+    <a href="/newpost">New post</a>
+    <br>
+    <a href="/signup"> Signup</a>
+    </div>
+</body>
+
+</html>

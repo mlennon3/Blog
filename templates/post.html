@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <body>
+        <div class="post">
+            <div class="post-subject">{{post.subject}}</div>
+            <div class="post-created">{{post.created.strftime("%b %d, %Y")}}</div>
+            <p class="post-content">{{post.content.replace('\n', '<br>') | safe}}</p>
+            <div class="permalink">This is post number {{post.key().id()}}</div>
+        </div>
+        <hr>
+
+
+{% endblock %}

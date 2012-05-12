@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            newpost
+        </title>
+    </head>
+
+<style type="text/css">
+        body {
+            font-family: sans-serif;
+            width:800px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .error {
+            color: red;
+            font-size: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 18px;
+        }
+
+        input[type=text] {
+            width:  600px;
+            font-size:  18px;
+            padding: 2px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 600px;
+            height: 400px;
+            font-size: 14px;
+        }
+
+        input[type=submit] {
+            font-size: 24px;
+        }
+
+        hr {
+            margin: 40px auto;
+        }
+    </style>
+
+
+
+
+
+
+    <body>
+
+        <form method="post">
+            <label>
+                <div>Subject</div>
+                <input type="text" name="subject" value="{{subject}}">
+            </label>
+            
+
+            <label>
+                <div>Content</div>
+                <textarea name="content">{{content}}</textarea>
+            </label>
+
+            <div class="error">{{error}}</div>
+
+            <input type="submit">
+        </form>
+    </body>
+
+
+</html>
