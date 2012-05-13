@@ -44,10 +44,10 @@ class Handler(webapp2.RequestHandler):
         return password == pw_check
 
     def set_user_cookie(self, user_id = ''):
-        if user_id:
+        if user_id != '':
             self.response.headers.add_header('Set-Cookie', 'user_id=%s' % str(self.make_secure_val(user_id)), Path = '/')
         else:
-            return "user_id expected"
+            self.response.headers.add_header('Set-Cookie', 'user_id=', Path = '/')
 
 
 class Post(db.Model):
@@ -208,10 +208,15 @@ class Login(Handler):
             if not self.correct_password(user.username, user.password, entered_password):
                 self.render('login.html', password_error="Invalid login")
             else:
-                self.render('welcome.html', user = user)
+                self.redirect('/welcome')
         else:
             self.render('login.html', password_error="Invalid login")
 
+class Logout(Handler):
+    def get(self):
+        self.set_user_cookie(user_id = '')
+        self.redirect('/signup')
+
 app = webapp2.WSGIApplication([('/', MainPage),
-                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login)],
+                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout)],
                                 debug=True)
