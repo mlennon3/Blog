@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-    <head>
-    </head>
+{% extends "base.html" %}
 
-    <body>
+{% block content %}
+
         <form method="post">
         <label>Username
             <input type="text" name="username" value={{username}}>
@@ -25,5 +23,5 @@
         </label>
         <div style="color: red">{{email_error}}</div>
         <input type="submit">
-    </body>
-</html>
+
+{% endblock %}
