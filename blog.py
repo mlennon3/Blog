@@ -3,6 +3,9 @@ import webapp2
 import jinja2
 import re
 import cgi
+import hashlib
+import string
+import random
 
 from google.appengine.ext import db
 
@@ -19,6 +22,28 @@ class Handler(webapp2.RequestHandler):
 
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
+
+    def hash_str(self, s):
+        return hashlib.md5(s).hexdigest()
+
+    def make_secure_val(self, s):
+        return "%s|%s" %(s, self.hash_str(s + 'secret'))
+
+    def make_salt(self):
+        return ''.join(random.choice(string.letters) for x in xrange(5))
+
+    def make_pw_hash(self, username, pw, salt = None):
+        if not salt:
+            salt = self.make_salt()
+        h = hashlib.md5(username + pw + salt).hexdigest()
+        return '%s|%s' %(h, salt)
+
+    def correct_password(self, username, password, entered_password):
+        salt = password.split('|')[1]
+        pw_check = self.make_pw_hash(username, entered_password, salt)
+        return pw_check
+
+
 
 class Post(db.Model):
     subject = db.StringProperty(required = True)
@@ -83,6 +108,10 @@ class User(db.Model):
     email = db.StringProperty()
 
 
+class Cookie(Handler):
+    pass
+
+
 class UserSignup(Handler):
     def write_form(self, username="", email="", username_error="", password_error="", email_error="", password_match_error=""):
 
@@ -95,6 +124,14 @@ class UserSignup(Handler):
 
     def get(self):
         self.write_form()
+
+    def set_user_cookie(self, user_id = ''):
+        if user_id:
+            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % str(self.make_secure_val(user_id)), Path = '/')
+        else:
+            return "user_id expected"
+
+
 
     def post(self):
         username = self.request.get('username')
@@ -113,8 +150,9 @@ class UserSignup(Handler):
 
 
         else:
-            self.response.headers.add_header('Set-Cookie', str('username=%s' % username))
-            user = User(username = username, password = password, email = email)
+            user = User(username = username, password = self.make_pw_hash(username, password), email = email)
+            user.put()
+            self.set_user_cookie(user_id = '%s' % user.key().id())
             self.redirect('/welcome')
 
 
@@ -140,10 +178,40 @@ class UserSignup(Handler):
 
 class Welcome(Handler):
     def get(self):
-        username = self.request.cookies.get('username', '')
-        if username == '':
+        user_id_cookie = self.request.cookies.get('user_id', '')
+        if user_id_cookie == '':
             self.redirect('/signup')
-        self.render('welcome.html', username = username)
+        else:
+            if self.check_valid_cookie(user_id_cookie) == True:
+                user = User.get_by_id(int(self.get_user_id(user_id_cookie)))
+                
+
+
+                ####GOTTA BE CHANGED TO CHECK REAL USER UNPUT####
+                entered_password = user.password.split('|')[0]
+                ####GOTTA BE CHANGED TO CHECK REAL USER UNPUT####
+
+
+
+
+                if self.correct_password(user.username, user.password, entered_password):
+                    pw_valid = True
+                    self.render('welcome.html', user = user, pw_valid = pw_valid)
+                else:
+                    pw_valid = 'False'
+                    self.render('welcome.html', user = user, pw_valid = pw_valid)
+            else:
+                self.redirect('/signup')
+
+    def get_user_id(self, user_id_cookie):
+        return user_id_cookie.partition('|')[0]
+
+    def check_valid_cookie(self, user_id_cookie):
+        user_id = self.get_user_id(user_id_cookie)
+        if user_id_cookie == self.make_secure_val(user_id):
+            return True
+        else:
+            return False
 
 app = webapp2.WSGIApplication([('/', MainPage),
                                 ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/signup', UserSignup), ('/welcome', Welcome)],
