@@ -46,8 +46,6 @@ class Handler(webapp2.RequestHandler):
     def set_user_cookie(self, user_id = ''):
         if user_id != '':
             self.response.headers.add_header('Set-Cookie', 'user_id=%s' % str(self.make_secure_val(user_id)), Path = '/')
-        else:
-            self.response.headers.add_header('Set-Cookie', 'user_id=', Path = '/')
 
 
 class Post(db.Model):
@@ -214,7 +212,7 @@ class Login(Handler):
 
 class Logout(Handler):
     def get(self):
-        self.set_user_cookie(user_id = '')
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
         self.redirect('/signup')
 
 app = webapp2.WSGIApplication([('/', MainPage),
