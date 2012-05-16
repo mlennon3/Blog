@@ -6,6 +6,9 @@ import cgi
 import hashlib
 import string
 import random
+import json
+import urllib2
+#from xml import minidom
 from types import *
 from google.appengine.ext import db
 
@@ -62,16 +65,24 @@ class MainPage(Handler):
     def render_main(self):
         all_posts = db.GqlQuery("SELECT * FROM Post "
                             "ORDER BY created DESC limit 10")
-
-
-
         self.render('blog-front.html', posts = all_posts, post_id = '')
-
-
 
     def get(self):
         self.render_main()
 
+class MainPageJSon(MainPage):
+    def get(self):
+        list_of_dicts = []
+        all_posts = db.GqlQuery("SELECT * FROM Post "
+                            "ORDER BY created DESC limit 10")
+
+        for post in all_posts:
+            list_of_dicts.append({"content": post.content, "subject": post.subject, "created": post.created.strftime("%b %d, %Y")})
+        x = json.dumps(list_of_dicts)
+        self.response.headers['Content-Type'] = "application/json; charset=utf-8"
+        self.response.out.write(x)
+
+        
 
 class SpecificPost(Handler):
     def get(self, post_id):
@@ -82,6 +93,16 @@ class SpecificPost(Handler):
         else:
             self.error(404)
             return
+
+class SpecificPostJSon(Handler):
+    def get(self, post_id):
+        list_of_dicts = []
+        post = Post.get_by_id(int(post_id))
+        if post:
+            list_of_dicts.append({"content": post.content, "subject": post.subject, "created": post.created.strftime("%b %d, %Y")})
+        x = json.dumps(list_of_dicts)
+        self.response.headers['Content-Type'] = "application/json; charset=utf-8"
+        self.response.out.write(x)
 
 class NewPost(Handler):
     def render_new_post(self, subject="", content="", error=""):
@@ -215,6 +236,10 @@ class Logout(Handler):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
         self.redirect('/signup')
 
-app = webapp2.WSGIApplication([('/', MainPage),
-                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout)],
+class FrontJson(Handler):
+    def get(self):
+        MainPage.get()
+
+app = webapp2.WSGIApplication([('/', MainPage), ('/.json', MainPageJSon),
+                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/(\d+).json', SpecificPostJSon), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout),],
                                 debug=True)

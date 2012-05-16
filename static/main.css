@@ -1,40 +1,115 @@
 body {
-    font-family: sans-serif;
-    width:800px;
-    margin: 0 auto;
+    position: relative;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+
+    width: 600px;
+    margin:  0 auto;
     padding: 30px;
+    color: #333;
+}
+
+.login-right-space {
+    position: absolute;
+    right: 10px;
+    width: 200px;
+
+}
+
+.login-area {
+    position: relative;
+    right: 10px;
+}
+
+.main-title {
+    color: #222;
+    font-size: 40px;
+    margin-bottom: 30px;
+    text-decoration: none;
 }
 
 h2 {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 20px;
+    text-align: center;
 }
 
 .error {
     color: red;
+    font-size: 16px;
 }
 
 label {
     display: block;
-    font-size: 20px;
+    font-size: 18px;
 }
+
+label + label {
+    margin-top: 20px;
+}
+
+input[type=text] {
+
+    width: 170px;
+    padding: 2px;
+    font-family: monospace;
+}
+
+.subject {
+    width: 400px;
+}
+
+input[type=password] {
+    padding: 2px;
+    width: 170px;
+}
+
+input[type=submit] {
+    font-size: 24px;
+}
+
 .post-subject {
+    font-size: 22px;
     font-weight: bold;
-    font-size: 20px;
+    margin-top: 20px;
+    text-decoration: none;
+    text-align: center;
+    color: #333;
+}
+.post-subject:hover {
+    text-decoration: underline;
+}
+
+.post-subject:visited {
+    color: #333;
+}
+
+textarea {
+    width: 500px;
+    height: 400px;
+    font-size: 17px;
+    font-family: monospace;
+}
+
+.post + .post {
+    margin-top: 50px;
+}
+
+.post-heading {
+    position: relative;
+    border-bottom: 1px solid #666;
+}
+
+.post-created {
+    font-size: 12px;
+    text-align: center;
 }
 
 .post-content {
-    margin: 20px;
-}
-.post-created {
-    font-style: italic;
-    font-size: 10px;
-}
-.permalink {
-    font-size: 10px;
+    margin-top: 5px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
-hr {
-    margin: 20px auto;
-}
+

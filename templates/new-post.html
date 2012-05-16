@@ -1,56 +1,6 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>
-            newpost
-        </title>
-    </head>
+{% extends "base.html" %}
 
-<style type="text/css">
-        body {
-            font-family: sans-serif;
-            width:800px;
-            margin: 0 auto;
-            padding: 30px;
-        }
-        .error {
-            color: red;
-            font-size: 18px;
-        }
-
-        label {
-            display: block;
-            font-size: 18px;
-        }
-
-        input[type=text] {
-            width:  600px;
-            font-size:  18px;
-            padding: 2px;
-            margin-bottom: 20px;
-        }
-
-        textarea {
-            width: 600px;
-            height: 400px;
-            font-size: 14px;
-        }
-
-        input[type=submit] {
-            font-size: 24px;
-        }
-
-        hr {
-            margin: 40px auto;
-        }
-    </style>
-
-
-
-
-
-
-    <body>
+{% block content %}
 
         <form method="post">
             <label>
@@ -58,7 +8,6 @@
                 <input type="text" name="subject" value="{{subject}}">
             </label>
             
-
             <label>
                 <div>Content</div>
                 <textarea name="content">{{content}}</textarea>
@@ -68,7 +17,4 @@
 
             <input type="submit">
         </form>
-    </body>
-
-
-</html>
+{% endblock %}
