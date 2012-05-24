@@ -26,7 +26,7 @@ def recent_posts():
     #if posts_and_time is not None:
         #return posts_and_time
     try:
-        return cache['key']
+        return cache['recent_posts']
     except KeyError:
         logging.error("DB HIT")
         posts = db.GqlQuery("SELECT * FROM Post "
@@ -35,8 +35,20 @@ def recent_posts():
         posts_and_time = [posts, cache_hit_time]
         #if not memcache.add("posts_and_time", posts_and_time, 10):
             #logging.error("Memcache set failed.")
-        cache['key'] = posts_and_time
+        cache['recent_posts'] = posts_and_time
         return posts_and_time
+
+def current_post(post_id):
+    post_id_string = str(post_id) #str?? needed?
+    try:
+        return cache[post_id_string]
+    except KeyError:
+        logging.error("DB HIT")
+        s = Post.get_by_id(int(post_id))
+        cache_hit_time = time.time()
+        post_and_time = [s, cache_hit_time]
+        cache[post_id_string] = post_and_time
+        return cache[post_id_string]
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -111,13 +123,9 @@ class MainPageJSon(MainPage):
 
 class SpecificPost(Handler):
     def get(self, post_id):
-        s = Post.get_by_id(int(post_id))
-        if s:
-            post_id = s.key().id()
-            self.render("blog-front.html", posts=[s], post_id=str(post_id))
-        else:
-            self.error(404)
-            return
+        specific_post = current_post(post_id)
+        cache_hit_time = specific_post[1]
+        self.render("blog-front.html", posts=[specific_post[0]], cache_last_hit = round(time.time() - cache_hit_time), post_id=str(post_id))
 
 class SpecificPostJSon(Handler):
     def get(self, post_id):
@@ -265,7 +273,13 @@ class Logout(Handler):
 class FrontJson(Handler):
     def get(self):
         MainPage.get()
+class Flush(Handler):
+    def get(self):
+        global cache
+        cache = {}
+        self.redirect('/')
+
 
 app = webapp2.WSGIApplication([('/', MainPage), ('/.json', MainPageJSon),
-                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/(\d+).json', SpecificPostJSon), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout),],
+                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/(\d+).json', SpecificPostJSon), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout), ('/flush', Flush)],
                                 debug=True)
