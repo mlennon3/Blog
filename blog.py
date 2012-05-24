@@ -8,12 +8,35 @@ import string
 import random
 import json
 import urllib2
+import logging
+import time
 #from xml import minidom
+from google.appengine.api import memcache
 from types import *
 from google.appengine.ext import db
 
 jinja_env = jinja2.Environment(autoescape=True,
     loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
+
+cache = {} #REMOVE ONCE MEMCACHED REINSTATED
+
+def recent_posts():
+    #parts relevant to memcache commented out
+    #posts_and_time = memcache.get("posts_and_time")
+    #if posts_and_time is not None:
+        #return posts_and_time
+    try:
+        return cache['key']
+    except KeyError:
+        logging.error("DB HIT")
+        posts = db.GqlQuery("SELECT * FROM Post "
+                        "ORDER BY created DESC limit 10")
+        cache_hit_time = time.time()
+        posts_and_time = [posts, cache_hit_time]
+        #if not memcache.add("posts_and_time", posts_and_time, 10):
+            #logging.error("Memcache set failed.")
+        cache['key'] = posts_and_time
+        return posts_and_time
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -63,9 +86,11 @@ class Post(db.Model):
 
 class MainPage(Handler):
     def render_main(self):
-        all_posts = db.GqlQuery("SELECT * FROM Post "
-                            "ORDER BY created DESC limit 10")
-        self.render('blog-front.html', posts = all_posts, post_id = '')
+        #posts = memcache.get("posts") 
+        #COMMENTED OUT FOR MEMCACHE, SHOULD BE RETURNED
+        posts = recent_posts()
+        cache_hit_time = posts[1]
+        self.render('blog-front.html', posts = posts[0], cache_last_hit = round(time.time() - cache_hit_time), post_id = '')
 
     def get(self):
         self.render_main()
@@ -114,13 +139,14 @@ class NewPost(Handler):
 
 
     def post(self):
+        global cache
         subject = self.request.get("subject")
         content = self.request.get("content")
 
         if subject and content:
             post = Post(subject = subject, content = content)
             post_key = post.put() #Key('Post', id)
-
+            cache = {} #REMOVE ONCE MEMCACHE IS REINSTATED
             self.redirect('/%d' %post_key.id())
         else:
             error = "need both a title and a post"
