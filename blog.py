@@ -18,24 +18,21 @@ from google.appengine.ext import db
 jinja_env = jinja2.Environment(autoescape=True,
     loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 
-cache = {} #REMOVE ONCE MEMCACHED REINSTATED
+#cache = {} #REMOVE ONCE MEMCACHED REINSTATED
 
 def recent_posts():
-    #parts relevant to memcache commented out
-    #posts_and_time = memcache.get("posts_and_time")
-    #if posts_and_time is not None:
-        #return posts_and_time
-    try:
-        return cache['recent_posts']
-    except KeyError:
+    posts_and_time = memcache.get("posts_and_time")
+    if posts_and_time is not None:
+        return posts_and_time
+
+    else:
         logging.error("DB HIT")
         posts = db.GqlQuery("SELECT * FROM Post "
                         "ORDER BY created DESC limit 10")
         cache_hit_time = time.time()
         posts_and_time = [posts, cache_hit_time]
-        #if not memcache.add("posts_and_time", posts_and_time, 10):
-            #logging.error("Memcache set failed.")
-        cache['recent_posts'] = posts_and_time
+        if not memcache.add("posts_and_time", posts_and_time, 10):
+            logging.error("Memcache set failed.")
         return posts_and_time
 
 def current_post(post_id):
@@ -98,8 +95,6 @@ class Post(db.Model):
 
 class MainPage(Handler):
     def render_main(self):
-        #posts = memcache.get("posts") 
-        #COMMENTED OUT FOR MEMCACHE, SHOULD BE RETURNED
         posts = recent_posts()
         cache_hit_time = posts[1]
         self.render('blog-front.html', posts = posts[0], cache_last_hit = round(time.time() - cache_hit_time), post_id = '')

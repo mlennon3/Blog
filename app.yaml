@@ -9,7 +9,7 @@ handlers:
   static_dir: static
 
 - url: /.*
-  script: blog.app
+  script: wiki.app
   
 libraries:
 - name: webapp2
