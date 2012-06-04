@@ -1,0 +1,14 @@
+{% extends "wiki-base.html" %}
+
+{% block page %}
+<a href="/wiki/_edit{{wiki.pagename}}">Edit</a>
+<div>
+{{wiki.content|safe}}<br>
+
+</div>
+<br><br>
+<div><br>
+{{other}}
+</div>
+
+{% endblock %}

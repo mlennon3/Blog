@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link type="text/css" rel="stylesheet" href="/static/wiki.css" />
+
+    <title> Michael's Wiki</title>
+</head>
+
+<body>
+    <br>
+    {{username}}
+    <a href="/login">Login</a>
+    <a href="/logout">Logout</a>
+    <a href="/signup">Signup</a>
+
+    <br>
+    <div id="page">
+        {% block page %}
+        this is where block page is
+        {% endblock %}
+    </div>
+
+</body>
+
+</html>

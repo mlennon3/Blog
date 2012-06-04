@@ -1,0 +1,10 @@
+{% extends "wiki-base.html" %}
+
+{% block page %}
+{% for wiki in wikis %}
+{{wiki.created}} {{wiki.content[:100]}}
+<a href="{{wiki.pagename}}?v={{wiki.version}}">View</a>
+<br><br>
+
+{% endfor %}
+{% endblock %}

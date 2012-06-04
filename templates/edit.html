@@ -1,0 +1,16 @@
+{% extends "wiki-base.html" %}
+
+{% block page %}
+    <form method="post">
+        <label>
+            <div>Edit</div>
+            <textarea name="content">{{content}}</textarea>
+        </label>
+
+        <input type="submit" value="Save">
+    </form>
+
+
+
+{% endblock %}
+
