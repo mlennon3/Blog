@@ -8,9 +8,12 @@ handlers:
 - url: /static
   static_dir: static
 
-- url: /.*
+- url: /wiki.*
   script: wiki.app
-  
+
+- url: /.*
+  script: blog.app
+
 libraries:
 - name: webapp2
   version: "2.5.1"

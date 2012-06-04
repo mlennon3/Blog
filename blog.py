@@ -9,6 +9,7 @@ import random
 import json
 import urllib2
 import logging
+import wiki
 import time
 #from xml import minidom
 from google.appengine.api import memcache
