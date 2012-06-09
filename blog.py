@@ -19,7 +19,6 @@ from google.appengine.ext import db
 jinja_env = jinja2.Environment(autoescape=True,
     loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 
-#cache = {} #REMOVE ONCE MEMCACHED REINSTATED
 
 def recent_posts():
     posts = memcache.get("posts")
@@ -97,7 +96,6 @@ class Post(db.Model):
 class MainPage(Handler):
     def render_main(self):
         posts = recent_posts()
-        #cache_hit_time = posts[1]
         self.render('blog-front.html', posts = posts, post_id = '')
 
     def get(self):
@@ -146,14 +144,13 @@ class NewPost(Handler):
 
 
     def post(self):
-        global cache
         subject = self.request.get("subject")
         content = self.request.get("content")
 
         if subject and content:
             post = Post(subject = subject, content = content)
             post_key = post.put() #Key('Post', id)
-            cache = {} #REMOVE ONCE MEMCACHE IS REINSTATED
+            memcache.add(str(post_key.id()), post)
             self.redirect('/%d' %post_key.id())
         else:
             error = "need both a title and a post"
@@ -272,11 +269,6 @@ class Logout(Handler):
 class FrontJson(Handler):
     def get(self):
         MainPage.get()
-class Flush(Handler):
-    def get(self):
-        global cache
-        cache = {}
-        self.redirect('/')
 
 class FourOhFour(Handler):
     def get(self):
@@ -284,5 +276,5 @@ class FourOhFour(Handler):
 
 
 app = webapp2.WSGIApplication([('/', MainPage), ('/.json', MainPageJSon),
-                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/(\d+).json', SpecificPostJSon), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout), ('/flush', Flush), ('/FourOhFour', FourOhFour)],
+                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/(\d+).json', SpecificPostJSon), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout), ('/FourOhFour', FourOhFour)],
                                 debug=True)
