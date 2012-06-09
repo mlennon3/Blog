@@ -22,31 +22,31 @@ jinja_env = jinja2.Environment(autoescape=True,
 #cache = {} #REMOVE ONCE MEMCACHED REINSTATED
 
 def recent_posts():
-    posts_and_time = memcache.get("posts_and_time")
-    if posts_and_time is not None:
-        return posts_and_time
+    posts = memcache.get("posts")
+    if posts is not None:
+        return posts
 
     else:
         logging.error("DB HIT")
         posts = db.GqlQuery("SELECT * FROM Post "
                         "ORDER BY created DESC limit 10")
-        cache_hit_time = time.time()
-        posts_and_time = [posts, cache_hit_time]
-        if not memcache.add("posts_and_time", posts_and_time, 10):
+        if not memcache.add("posts", posts):
             logging.error("Memcache set failed.")
-        return posts_and_time
+        return posts
 
 def current_post(post_id):
-    post_id_string = str(post_id) #str?? needed?
-    try:
-        return cache[post_id_string]
-    except KeyError:
+    #post_id_string = str(post_id) #str?? needed?
+    str_post_id = str(post_id)
+    post = memcache.get(str_post_id)
+    if post is not None:
+        return post
+
+    else:
         logging.error("DB HIT")
-        s = Post.get_by_id(int(post_id))
-        cache_hit_time = time.time()
-        post_and_time = [s, cache_hit_time]
-        cache[post_id_string] = post_and_time
-        return cache[post_id_string]
+        post = Post.get_by_id(int(post_id))
+        if not memcache.add(str_post_id, post):
+            logging.error("Memcache set failed.")
+        return post
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -97,8 +97,8 @@ class Post(db.Model):
 class MainPage(Handler):
     def render_main(self):
         posts = recent_posts()
-        cache_hit_time = posts[1]
-        self.render('blog-front.html', posts = posts[0], cache_last_hit = round(time.time() - cache_hit_time), post_id = '')
+        #cache_hit_time = posts[1]
+        self.render('blog-front.html', posts = posts, post_id = '')
 
     def get(self):
         self.render_main()
@@ -120,8 +120,11 @@ class MainPageJSon(MainPage):
 class SpecificPost(Handler):
     def get(self, post_id):
         specific_post = current_post(post_id)
-        cache_hit_time = specific_post[1]
-        self.render("blog-front.html", posts=[specific_post[0]], cache_last_hit = round(time.time() - cache_hit_time), post_id=str(post_id))
+        if not specific_post:
+            self.redirect('/FourOhFour')
+        else:
+            posts = [specific_post] #because in the html it iterates over posts
+            self.render("blog-front.html", posts=posts, post_id=str(post_id))
 
 class SpecificPostJSon(Handler):
     def get(self, post_id):
@@ -275,7 +278,11 @@ class Flush(Handler):
         cache = {}
         self.redirect('/')
 
+class FourOhFour(Handler):
+    def get(self):
+        self.response.out.write("404. Sorry couldn't find that.")
+
 
 app = webapp2.WSGIApplication([('/', MainPage), ('/.json', MainPageJSon),
-                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/(\d+).json', SpecificPostJSon), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout), ('/flush', Flush)],
+                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/(\d+).json', SpecificPostJSon), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout), ('/flush', Flush), ('/FourOhFour', FourOhFour)],
                                 debug=True)
