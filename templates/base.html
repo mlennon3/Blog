@@ -6,22 +6,40 @@
     <title> Michael's Hand-Built Blog</title>
 </head>
 
-<body><h2>
-    <a href='/' class="main-title">
-        Michael's Hand Blog
-    </a></h2>
+<body>
+    <div id="container">
+        <h2>
+            <a href='/' class="main-title">
+            Michael's Hand-Built Blog
+            </a>
+        </h2>
 
-    <div id="content">
-        {% block content %}
-        {% endblock %}
-    <br>
-    <a href="/newpost">New post</a>
-    <br>
-    <a href="/login"> Login</a>
-    <br>
-    <a href="/signup"> Signup</a>
+        <div id="callout">
+                <p>
+                    My name is Michael and I'm working on this web log.
+                </p>
+                <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut nulla orci, porttitor sit amet pharetra non, aliquet nec sapien. Cras sit amet magna sapien. Nunc porttitor magna id augue tristique feugiat. Curabitur ultricies ornare ligula, quis molestie est rhoncus a. Nam nec felis magna, laoreet condimentum ante. Cras ligula lorem, placerat viverra porttitor a, commodo quis quam. Nulla tempor euismod molestie. Quisque sed fermentum nisi.
+
+                </p>
+                <p>
+                Nunc euismod ornare tortor, eu pharetra felis iaculis a. Aenean volutpat ante vel nulla mattis faucibus. Sed ac libero in mi auctor luctus vitae ac sapien. Etiam faucibus, odio id malesuada viverra, massa elit hendrerit lectus, auctor ornare nulla arcu eu magna. Phasellus vestibulum massa non neque volutpat pellentesque. Morbi feugiat aliquet justo ut dictum. Vestibulum purus mi, hendrerit non pellentesque eu, pretium vel orci. Etiam vitae risus et est facilisis blandit posuere malesuada ante. Quisque lobortis ullamcorper quam, eget semper nibh mollis nec. Vivamus rhoncus fermentum interdum. Mauris porta malesuada placerat. In dignissim iaculis auctor. Integer ut neque augue. Vivamus scelerisque neque non diam tempus iaculis.
+            </p>
+
+        </div>
+
+        <div id="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+        <div id="nav">
+            <a href="/newpost">New post</a>
+            <a href="/login"> Login</a>
+            <a href="/signup"> Signup</a>
+            <a href="/logout"> Logout</a>
+        </div>
+        
     </div>
-    <a href="/logout"> Logout</a>
 </body>
 
 </html>

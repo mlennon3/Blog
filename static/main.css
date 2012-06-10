@@ -2,13 +2,53 @@ body {
     position: relative;
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
-
+    background: url("pattern_062.gif");
     width: 600px;
     margin:  0 auto;
     padding: 30px;
     color: #333;
 }
 
+#container {
+    position: relative;
+    width: 600px;
+    background-color: #eef;
+    margin: 0px;
+    top: -50px;
+    left: 60px;
+    padding: 50px 0px 0px 0px;
+}
+#content {
+    position: relative;
+    padding: 20px 30px 20px 50px;
+}
+
+#callout {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: -125px;
+    width: 150px;
+    background: #eef;
+    border-right: 1px solid #aba;
+    padding: 175px 10px 10px 10px;
+    background: #eef;
+}
+#nav {
+    height: 30px;
+    text-align: center;
+    padding: 0px, 0px, 10px, 30px;
+}
+
+ #nav a {
+    display: block;
+    text-decoration: none;
+    color: blue;
+    line-height: 30px;
+    padding: 0px 49px 10px;
+    position: relative;
+    float:left;
+}
 .login-right-space {
     position: absolute;
     right: 10px;
