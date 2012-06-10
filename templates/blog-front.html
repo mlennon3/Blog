@@ -17,7 +17,12 @@
             
             <p class="post-content">{{post.content.replace('\n', '<br>') | safe}}
             </p>
-            
+
+            {% if post.last_edited %}
+            <div class="post-edited">
+                Last edited {{post.last_edited.strftime("%H:%M %b %d, %Y")}}
+            </div>
+            {% endif %}
         </div>
         <hr>
     {% endfor %}

@@ -11,6 +11,7 @@ import urllib2
 import logging
 import wiki
 import time
+from datetime import datetime, date, time
 import secret
 #from xml import minidom
 from google.appengine.api import memcache
@@ -93,10 +94,22 @@ class Handler(webapp2.RequestHandler):
         else:
             return False
 
+    def is_michael(self, user_id_cookie):
+        user_id = self.get_user_id(user_id_cookie)
+        if user_id:
+            user = User.get_by_id(int(user_id))
+        else:
+            return False
+        if not (self.check_valid_cookie(user_id_cookie) and user.username == "Michael"):
+            return False
+        else:
+            return True
+
 class Post(db.Model):
     subject = db.StringProperty(required = True)
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
+    last_edited = db.DateTimeProperty()
 
     def render(self):
         self._render_text = self.content
@@ -134,6 +147,39 @@ class SpecificPost(Handler):
             posts = [specific_post] #because in the html it iterates over posts
             self.render("blog-front.html", posts=posts, post_id=str(post_id))
 
+class EditPost(Handler):
+    def get(self, post_id):
+        user_id_cookie = self.request.cookies.get('user_id', '')
+        if not self.is_michael(user_id_cookie):
+            self.redirect('/login')
+        specific_post = current_post(post_id)
+        if not specific_post:
+            self.redirect('/FourOhFour')
+        else:
+            self.render("new-post.html", subject=specific_post.subject, 
+                        content=specific_post.content,
+                        error="")
+    
+    def post(self, post_id): #COPIED FROM NEWPOST
+        specific_post = current_post(post_id)
+        subject = self.request.get("subject")
+        content = self.request.get("content")
+
+        if subject and content:
+            specific_post.subject = subject
+            specific_post.content = content
+            specific_post.last_edited = datetime.now()
+            post_key = specific_post.put()
+            if not memcache.set(str(post_key.id()), specific_post):
+                logging.error("memcache set error............XxXxXxXxXx")
+            self.redirect('/%d' %post_key.id())
+        else:
+            error = "need both a title and a post"
+            self.render_new_post(subject, content, error)
+
+
+
+
 class SpecificPostJSon(Handler):
     def get(self, post_id):
         list_of_dicts = []
@@ -151,16 +197,10 @@ class NewPost(Handler):
 
     def get(self):
         user_id_cookie = self.request.cookies.get('user_id', '')
-        user_id = self.get_user_id(user_id_cookie)
-        if user_id:
-            user = User.get_by_id(int(user_id))
-        else:
-            self.redirect('/login')
-        if not (self.check_valid_cookie(user_id_cookie) and user.username == "Michael"):
+        if not self.is_michael(user_id_cookie):
             self.redirect('/login')
         else:
             self.render_new_post()
-
 
     def post(self):
         subject = self.request.get("subject")
@@ -286,6 +326,16 @@ class FourOhFour(Handler):
         self.response.out.write("404. Sorry couldn't find that.")
 
 
-app = webapp2.WSGIApplication([('/', MainPage), ('/.json', MainPageJSon),
-                                ('/newpost', NewPost), ('/(\d+)', SpecificPost), ('/(\d+).json', SpecificPostJSon), ('/signup', UserSignup), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout), ('/FourOhFour', FourOhFour)],
+
+app = webapp2.WSGIApplication([('/', MainPage), 
+                                ('/.json', MainPageJSon),
+                                ('/newpost', NewPost), 
+                                ('/(\d+)', SpecificPost), 
+                                ('/(\d+).json', SpecificPostJSon), 
+                                ('/signup', UserSignup), 
+                                ('/welcome', Welcome), 
+                                ('/login', Login), 
+                                ('/logout', Logout), 
+                                ('/FourOhFour', FourOhFour),
+                                ('/(\d+)' + '/_edit', EditPost)],
                                 debug=True)
