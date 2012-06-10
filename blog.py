@@ -11,6 +11,7 @@ import urllib2
 import logging
 import wiki
 import time
+import secret
 #from xml import minidom
 from google.appengine.api import memcache
 from types import *
@@ -62,7 +63,7 @@ class Handler(webapp2.RequestHandler):
         return hashlib.md5(s).hexdigest()
 
     def make_secure_val(self, s):
-        return "%s|%s" %(s, self.hash_str(s + 'secret'))
+        return "%s|%s" %(s, self.hash_str(s + secret.secret))
 
     def make_salt(self):
         return ''.join(random.choice(string.letters) for x in xrange(5))
@@ -82,6 +83,15 @@ class Handler(webapp2.RequestHandler):
         if user_id != '':
             self.response.headers.add_header('Set-Cookie', 'user_id=%s' % str(self.make_secure_val(user_id)), Path = '/')
 
+    def get_user_id(self, user_id_cookie):
+        return user_id_cookie.split('|')[0]
+
+    def check_valid_cookie(self, user_id_cookie):
+        user_id = self.get_user_id(user_id_cookie)
+        if user_id_cookie == self.make_secure_val(user_id):
+            return True
+        else:
+            return False
 
 class Post(db.Model):
     subject = db.StringProperty(required = True)
@@ -140,7 +150,16 @@ class NewPost(Handler):
 
 
     def get(self):
-        self.render_new_post()
+        user_id_cookie = self.request.cookies.get('user_id', '')
+        user_id = self.get_user_id(user_id_cookie)
+        if user_id:
+            user = User.get_by_id(int(user_id))
+        else:
+            self.redirect('/login')
+        if not (self.check_valid_cookie(user_id_cookie) and user.username == "Michael"):
+            self.redirect('/login')
+        else:
+            self.render_new_post()
 
 
     def post(self):
@@ -234,15 +253,7 @@ class Welcome(Handler):
             else:
                 self.redirect('/signup')
 
-    def get_user_id(self, user_id_cookie):
-        return user_id_cookie.split('|')[0]
 
-    def check_valid_cookie(self, user_id_cookie):
-        user_id = self.get_user_id(user_id_cookie)
-        if user_id_cookie == self.make_secure_val(user_id):
-            return True
-        else:
-            return False
 class Login(Handler):
     def get(self):
         self.render('login.html', password_error="")
