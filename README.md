@@ -1,4 +1,4 @@
 Blog
 ====
 
-Blog and wiki like the one made in Udacity 253
+My personal blog.  An ongoing project in web development.
