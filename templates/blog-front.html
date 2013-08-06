@@ -15,7 +15,7 @@
                 {{post.created.strftime("%b %d, %Y")}}
             </div>
             
-            <p class="post-content">{{post.content.replace('\n', '<br>') | safe}}
+            <p class="post-content">{{post.content.replace('\n\n', '<br>') | safe}}
             </p>
 
             {% if post.last_edited %}
